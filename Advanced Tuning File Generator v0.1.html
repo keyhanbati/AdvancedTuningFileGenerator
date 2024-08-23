@@ -1,0 +1,84 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Advanced Tuning File Generator bv0.1 by Osama Al-Khatib</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        button {
+            display: block;
+            margin-top: 10px;
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+    <script>
+        function generateTuningFile() {
+            const offsetValue = -50;  // Offset for specified notes
+            const note1 = document.getElementById('note1').value.toUpperCase();
+            const note2 = document.getElementById('note2').value.toUpperCase();
+            const fileFormat = document.getElementById('fileFormat').value;
+            const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+            const solfege = ['Do', 'Do#', 'Re', 'Re#', 'Mi', 'Fa', 'Fa#', 'Sol', 'Sol#', 'La', 'La#', 'Si'];
+const scaleLength = 12;  // Length of the scale for .scl files
+        
+let tuningData = fileFormat === 'tun' ? '; Custom scale tuning by Osama Al-Khatib\n[Exact Tuning] \n' : '! Custom scale tuning by Osama Al-Khatib.scl\nNumber of notes: 12\n!\n';
+    for (let i = 0; i < (fileFormat === 'tun' ? 128 : scaleLength); i++) {
+    let noteIndex = i % 12;
+    let noteOffset = (notes[noteIndex] === note1 || notes[noteIndex] === note2) ? offsetValue : 0;
+    let calculatedValue = (i * 100 + noteOffset).toFixed(4);
+    
+    if (fileFormat === 'tun') {
+        tuningData += 'note ' + i + '=' + calculatedValue + '\n';
+    } else if (fileFormat === 'scl') {
+        // Only add non-zero entries
+        if (i < 12 && calculatedValue !== '1.0000') {
+            tuningData += calculatedValue + '\n';
+        }
+    }
+}
+if (fileFormat === 'scl') {
+    tuningData += '2/1';  // Append the line "2/1" at the end
+}
+
+            // Calculate file name
+            let firstNoteIndex = notes.indexOf(note1);
+            let fileNameNoteIndex = (firstNoteIndex + 3) % 12;  // +3 semitones from the first note
+            let f1NameNoteIndex = (firstNoteIndex - 2) % 12;  // -2 semitones from the first note
+        
+            let fileName = notes[fileNameNoteIndex] + '_bayat' + solfege[f1NameNoteIndex] + '.' + fileFormat;
+
+            const blob = new Blob([tuningData], { type: 'text/plain' });
+            const elem = window.document.createElement('a');
+            elem.href = window.URL.createObjectURL(blob);
+            elem.download = fileName;
+            document.body.appendChild(elem);
+            elem.click();
+            document.body.removeChild(elem);
+        }
+    </script>
+</head>
+<body>
+    <h2>Advanced Tuning File Generator</h2>
+    <div>
+        <label for="note1">Offset Note 1:</label>
+        <input type="text" id="note1" placeholder="e.g., F#"><br>
+        <label for="note2">Offset Note 2:</label>
+        <input type="text" id="note2" placeholder="e.g., D"><br>
+        <label for="fileFormat">File Format:</label>
+        <select id="fileFormat">
+            <option value="tun">.tun</option>
+            <option value="scl">.scl</option>
+        </select><br>
+    </div>
+    <button onclick="generateTuningFile()">Download Tuning File</button>
+    <div id="error" class="error"></div>
+</body>
+</html>
